@@ -7,7 +7,7 @@ using FluentAssertions;
 using Moq;
 using todo.Controllers;
 using todo.Dtos;
-using todo.Models;
+using todo.Services;
 
 
 public class TodoItemsControllerTests
@@ -31,21 +31,4 @@ public class TodoItemsControllerTests
         result.Should().BeOfType<CreatedAtActionResult>();
     }
 
-}
-
-public class TodoItemsController
-{
-    public TodoItemsController(ITodoService mockServiceObject)
-    {
-        throw new NotImplementedException();
-    }
-
-    public object CreateTodoItem(CreateTodoItemDto newTodo)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public interface ITodoService
-{
 }
