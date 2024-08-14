@@ -1,6 +1,6 @@
 ﻿services:
-  server:
-    image: server
+  todo:
+    image: todo
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: todo/Dockerfile
