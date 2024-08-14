@@ -35,8 +35,10 @@ public class TodoItemsController: ControllerBase
         return CreatedAtAction(nameof(GetTodoItem), new { id = 1 }, todoItemDto);
     }
 
-    public object DeleteTodoItem(int testTodoId)
+    [HttpDelete("{id:int}")]
+    public object DeleteTodoItem(int id)
     {
-        throw new NotImplementedException();
+        _todoService.DeleteTodoItem(id);
+        return NoContent();
     }
 }
