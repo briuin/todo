@@ -31,4 +31,21 @@ public class TodoItemsControllerTests
         result.Should().BeOfType<CreatedAtActionResult>();
     }
 
+    [Fact]
+    public void DeleteTodoItem_ReturnsNoContentResult_WhenTodoItemIsDeleted()
+    {
+        // Arrange
+        var mockService = new Mock<ITodoService>();
+        int testTodoId = 1;
+
+        mockService.Setup(service => service.DeleteTodoItem(testTodoId)).Verifiable();
+
+        var controller = new TodoItemsController(mockService.Object);
+
+        var result = controller.DeleteTodoItem(testTodoId);
+
+        result.Should().BeOfType<NoContentResult>();
+
+        mockService.Verify(service => service.DeleteTodoItem(testTodoId), Times.Once);
+    }
 }

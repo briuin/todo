@@ -34,4 +34,9 @@ public class TodoItemsController: ControllerBase
         _todoService.CreateTodoItem(todoItemDto);
         return CreatedAtAction(nameof(GetTodoItem), new { id = 1 }, todoItemDto);
     }
+
+    public object DeleteTodoItem(int testTodoId)
+    {
+        throw new NotImplementedException();
+    }
 }
