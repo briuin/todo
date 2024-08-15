@@ -15,4 +15,17 @@ public class TodoServiceTests
         result.Should().HaveCount(1);
         result.First().Name.Should().Be("Test 2");
     }
+    
+    [Fact]
+    public void GetTodoItems_FiltersByDueDate()
+    {
+        // Arrange
+        var service = new TodoService();
+        var filterDate = DateTime.Now.AddDays(1);
+        
+        var result = service.GetTodoItems(null, filterDate, "name", "asc");
+        
+        result.Should().HaveCount(2);
+        result.First().Name.Should().Be("Test 2");
+    }
 }
