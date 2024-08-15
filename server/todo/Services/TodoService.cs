@@ -16,19 +16,44 @@ public interface ITodoService
 
 public class TodoService : ITodoService
 {
+    private readonly TodoContext _context;
+
+    public TodoService(TodoContext context)
+    {
+        _context = context;
+    }
     public void CreateTodoItem(CreateTodoItemDto todoItemDto)
     {
-     
+        var todoItem = new TodoItemDto()
+        {
+            Name = todoItemDto.Name,
+            Description = todoItemDto.Description,
+            DueDate = todoItemDto.DueDate,
+            Status = todoItemDto.Status
+        };
+
+        _context.TodoItems.Add(todoItem);
+
+        _context.SaveChanges();
     }
 
     public TodoItemDto GetTodoItemById(int id)
     {
-        return new TodoItemDto();
+        return _context.TodoItems.Find(id);
     }
 
-    public void DeleteTodoItem(int testTodoId)
+    public void DeleteTodoItem(int id)
     {
-       
+       var todoItem = _context.TodoItems.Find(id);
+
+       if (todoItem == null)
+       {
+           throw new KeyNotFoundException($"Todo item with ID {id} not found.");
+       }
+
+       _context.TodoItems.Remove(todoItem);
+
+       _context.SaveChanges();
     }
 
     public void UpdateTodoItem(int testTodoId, UpdateTodoItemDto updateTodoItemDto)
@@ -38,26 +63,7 @@ public class TodoService : ITodoService
 
     public IEnumerable<TodoItemDto> GetTodoItems(TodoItemStatus? status, DateTime? dueDate, string sortBy, string sortDirection)
     {
-        var fakeData = new List<TodoItem>
-        {
-            new TodoItem
-            {
-                Id = 1, Name = "Test 1", Description = "Description 1", DueDate = DateTime.Now.AddDays(1),
-                Status = TodoItemStatus.NotStarted
-            },
-            new TodoItem
-            {
-                Id = 2, Name = "Test 2", Description = "Description 2", DueDate = DateTime.Now.AddDays(2),
-                Status = TodoItemStatus.InProgress
-            },
-            new TodoItem
-            {
-                Id = 3, Name = "Test 3", Description = "Description 3", DueDate = DateTime.Now.AddDays(3),
-                Status = TodoItemStatus.Completed
-            }
-        };
-
-        var query = fakeData.AsQueryable();
+        var query = _context.TodoItems.AsQueryable();
         if (status != null)
         {
             query = query.Where(todo => todo.Status == status);

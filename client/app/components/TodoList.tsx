@@ -72,6 +72,7 @@ const TodoList: React.FC = () => {
     try {
       const dto: CreateTodoItemDto = {
         name: newTodo,
+        description: '',
         dueDate: new Date(),
         status: TodoItemStatus.Pending,
       };

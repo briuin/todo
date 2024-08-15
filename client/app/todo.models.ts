@@ -7,20 +7,22 @@ export interface TodoItemDto {
 
 export interface CreateTodoItemDto {
   name: string;
+  description: string;
   status: TodoItemStatus;
   dueDate: Date;
 }
 
 export interface UpdateTodoItemDto {
   name: string;
+  description: string;
   status: TodoItemStatus;
   dueDate: Date;
 }
 
 export enum TodoItemStatus {
-  Pending = "Pending",
-  InProgress = "InProgress",
-  Completed = "Completed",
+  Pending = 0,
+  InProgress = 1,
+  Completed = 2,
 }
 
 export interface Todo {
