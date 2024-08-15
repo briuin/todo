@@ -1,3 +1,4 @@
+using todo;
 using todo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +6,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddSignalR();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        policyBuilder => policyBuilder
+            .WithOrigins("http://localhost:3000", "https://your-production-site.com")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()); 
+});
 
 builder.Services.AddScoped<ITodoService, TodoService>();
 
@@ -21,10 +34,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowSpecificOrigins"); 
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<TodoHub>("/todoHub"); 
 
 app.Run();
