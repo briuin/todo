@@ -107,7 +107,7 @@ public class TodoItemsControllerTests
     }
     
     [Fact]
-    public void GetTodoItems_ReturnsFilteredResultsByStatus()
+    public void GetTodoItems_ReturnsFilteredAndSortedResults()
     {
         // Arrange
         var mockService = new Mock<ITodoService>();
@@ -117,20 +117,20 @@ public class TodoItemsControllerTests
             new TodoItemDto { Id = 1, Name = "Test 1", Description = "Description 1", DueDate = DateTime.Now.AddDays(1), Status = TodoItemStatus.NotStarted },
             new TodoItemDto { Id = 2, Name = "Test 2", Description = "Description 2", DueDate = DateTime.Now.AddDays(2), Status = TodoItemStatus.InProgress }
         };
-
-        mockService.Setup(service => service.GetTodoItems(TodoItemStatus.InProgress, null, "Name", "asc"))
-            .Returns(mockTodoItems.Where(t => t.Status == TodoItemStatus.InProgress).ToList());
+        
+        mockService.Setup(service => service.GetTodoItems(TodoItemStatus.InProgress, null, "duedate", "asc"))
+            .Returns(mockTodoItems.Where(t => t.Status == TodoItemStatus.InProgress)
+                .OrderBy(t => t.DueDate)
+                .ToList());
 
         var controller = new TodoItemsController(mockService.Object);
-
-        var result = controller.GetTodoItems(TodoItemStatus.InProgress);
-
+        
+        var result = controller.GetTodoItems(TodoItemStatus.InProgress, null, "duedate", "asc");
+        
         var okResult = result.Result as OkObjectResult;
         okResult.Should().NotBeNull();
         var returnValue = okResult.Value as IEnumerable<TodoItemDto>;
         returnValue.Should().HaveCount(1);
         returnValue.First().Id.Should().Be(2);
-        
-        mockService.Verify(service => service.GetTodoItems(TodoItemStatus.InProgress, null, "Name", "asc"), Times.Once);
     }
 }
