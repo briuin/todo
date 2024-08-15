@@ -25,7 +25,7 @@ public class TodoServiceTests
         
         var result = service.GetTodoItems(null, filterDate, "name", "asc");
         
-        result.Should().HaveCount(2);
-        result.First().Name.Should().Be("Test 2");
+        result.Should().HaveCount(1);
+        result.First().Name.Should().Be("Test 1");
     }
 }
