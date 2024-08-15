@@ -8,6 +8,7 @@ public interface ITodoService
     TodoItemDto GetTodoItemById(int id);
     void DeleteTodoItem(int testTodoId);
     void UpdateTodoItem(int testTodoId, UpdateTodoItemDto updateTodoItemDto);
+    IEnumerable<TodoItemDto> GetTodoItems();
 }
 
 public class TodoService : ITodoService
@@ -30,5 +31,10 @@ public class TodoService : ITodoService
     public void UpdateTodoItem(int testTodoId, UpdateTodoItemDto updateTodoItemDto)
     {
        
+    }
+
+    public IEnumerable<TodoItemDto> GetTodoItems()
+    {
+        throw new NotImplementedException();
     }
 }

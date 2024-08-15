@@ -48,4 +48,9 @@ public class TodoItemsController: ControllerBase
         _todoService.UpdateTodoItem(id, todoItemDto);
         return NoContent();
     }
+
+    public IActionResult GetTodoItems()
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -63,19 +63,42 @@ public class TodoItemsControllerTests
             DueDate = DateTime.Now.AddDays(2),
             Status = TodoItemStatus.NotStarted
         };
-
-        // We setup the mock to expect a call to UpdateTodoItem with the specific ID and DTO.
+        
         mockService.Setup(service => service.UpdateTodoItem(testTodoId, updateTodoItemDto)).Verifiable();
 
         var controller = new TodoItemsController(mockService.Object);
 
-        // Act
         var result = controller.UpdateTodoItem(testTodoId, updateTodoItemDto);
 
-        // Assert
         result.Should().BeOfType<NoContentResult>();
-
-        // Verify that UpdateTodoItem was called once with the correct ID and DTO
+        
         mockService.Verify(service => service.UpdateTodoItem(testTodoId, updateTodoItemDto), Times.Once);
+    }
+    
+    [Fact]
+    public void GetTodoItems_ReturnsOkResult_WithListOfTodoItems()
+    {
+        // Arrange
+        var mockService = new Mock<ITodoService>();
+
+        var mockTodoItems = new List<TodoItemDto>
+        {
+            new TodoItemDto { Id = 1, Name = "Test 1", Description = "Description 1", DueDate = DateTime.Now.AddDays(1), Status = TodoItemStatus.NotStarted },
+            new TodoItemDto { Id = 2, Name = "Test 2", Description = "Description 2", DueDate = DateTime.Now.AddDays(2), Status = TodoItemStatus.InProgress }
+        };
+
+        mockService.Setup(service => service.GetTodoItems()).Returns(mockTodoItems);
+
+        var controller = new TodoItemsController(mockService.Object);
+
+        var result = controller.GetTodoItems();
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var returnValue = okResult.Value.Should().BeAssignableTo<IEnumerable<TodoItemDto>>().Subject;
+
+        returnValue.Should().HaveCount(2);
+        returnValue.Should().BeEquivalentTo(mockTodoItems);
+
+        mockService.Verify(service => service.GetTodoItems(), Times.Once);
     }
 }
