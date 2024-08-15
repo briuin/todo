@@ -37,6 +37,9 @@ public class TodoService : ITodoService
 
     public IEnumerable<TodoItemDto> GetTodoItems(TodoItemStatus? status, DateTime? dueDate, string sortBy, string sortDirection)
     {
-        return new List<TodoItemDto>();
+        return new List<TodoItemDto>
+        {
+            new TodoItemDto(){ Name = "Test 2"}
+        };
     }
 }
