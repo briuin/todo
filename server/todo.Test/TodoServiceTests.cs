@@ -28,4 +28,17 @@ public class TodoServiceTests
         result.Should().HaveCount(1);
         result.First().Name.Should().Be("Test 1");
     }
+    
+    [Fact]
+    public void GetTodoItems_SortsByDueDateAscending()
+    {
+        // Arrange
+        var service = new TodoService();
+
+        var result = service.GetTodoItems(null, null, "duedate", "desc");
+
+        result.Should().HaveCount(3);
+        result.First().Name.Should().Be("Test 3"); 
+        result.Last().Name.Should().Be("Test 1"); 
+    }
 }
