@@ -1,26 +1,44 @@
 import React, { useEffect, useState } from "react";
 import TodoItem from "./TodoItem";
 import * as signalR from "@microsoft/signalr";
-
-interface TodoHttpResponse {
-  id: number;
-  name: string;
-  description: string;
-  dueDate: Date;
-  status: number;
-}
-
-interface Todo {
-  id: number;
-  title: string;
-  completed: boolean;
-}
+import {
+  createTodoItem,
+  deleteTodoItem,
+  getTodoItems,
+  mapDTOtoModel,
+  updateTodoItem,
+} from "../services/todo.service";
+import {
+  CreateTodoItemDto,
+  Todo,
+  TodoItemDto,
+  TodoItemStatus,
+  UpdateTodoItemDto,
+} from "../todo.models";
 
 const TodoList: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [connection, setConnection] = useState<signalR.HubConnection | null>(
+    null
+  );
 
   useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const todoItems = await getTodoItems();
+        setTodos(todoItems);
+      } catch (error) {
+        setError("Failed to fetch todo items");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTodos();
+
     const connection = new signalR.HubConnectionBuilder()
       .withUrl("http://localhost:5064/todoHub", {
         skipNegotiation: true,
@@ -28,19 +46,19 @@ const TodoList: React.FC = () => {
       })
       .build();
 
+    setConnection(connection);
     connection.start().then(() => {
       console.log("Connected to SignalR");
     });
 
-    connection.on("ReceiveTodos", (updatedTodos: TodoHttpResponse[]) => {
+    connection.on("ReceiveTodos", (updatedTodos: TodoItemDto[]) => {
       console.log("Receive");
-      setTodos(
-        updatedTodos.map((x) => ({
-          id: x.id,
-          title: x.name,
-          completed: x.status !== 0,    
-        }))
-      );
+      setTodos(updatedTodos.map((x) => mapDTOtoModel(x)));
+    });
+
+    connection.on("ReceiveUpdate", (message) => {
+        console.log("Update received: ", message);
+        fetchTodos();
     });
 
     return () => {
@@ -50,27 +68,49 @@ const TodoList: React.FC = () => {
     };
   }, []);
 
-  const addTodo = () => {
-    if (newTodo.trim() !== "") {
-      const updatedTodos = [
-        ...todos,
-        { id: 5, title: newTodo, completed: false },
-      ];
-      setTodos(updatedTodos);
-      setNewTodo("");
-      sendUpdate(updatedTodos);
+  const handleCreate = async () => {
+    try {
+      const dto: CreateTodoItemDto = {
+        name: newTodo,
+        dueDate: new Date(),
+        status: TodoItemStatus.Pending,
+      };
+      await createTodoItem(dto);
+      if (connection) {
+        connection.invoke("SendUpdate", "A new todo item has been created.");
+      }
+    } catch (error) {
+      console.error("Failed to create todo item", error);
+      setError("Failed to create todo item");
     }
   };
 
-  const sendUpdate = (updatedTodos: Todo[]) => {
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5064/todoHub")
-      .build();
-
-    connection.start().then(() => {
-      connection.invoke("UpdateTodos", updatedTodos);
-    });
+  const handleUpdate = async (id: number, updatedTodo: UpdateTodoItemDto) => {
+    try {
+      await updateTodoItem(id, updatedTodo);
+      if (connection) {
+        connection.invoke("SendUpdate", "A todo item has been updated.");
+      }
+    } catch (error) {
+      console.error("Failed to update todo item", error);
+      setError("Failed to update todo item");
+    }
   };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteTodoItem(id);
+      if (connection) {
+        connection.invoke("SendUpdate", "A todo item has been deleted.");
+      }
+    } catch (error) {
+      console.error("Failed to delete todo item", error);
+      setError("Failed to delete todo item");
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="max-w-md mx-auto mt-10">
@@ -84,7 +124,7 @@ const TodoList: React.FC = () => {
           className="flex-grow p-2 border border-gray-300 rounded-l"
         />
         <button
-          onClick={addTodo}
+          onClick={handleCreate}
           className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600"
         >
           Add
@@ -97,8 +137,14 @@ const TodoList: React.FC = () => {
             title={todo.title}
             completed={todo.completed}
             onToggle={() => {}}
-            onDelete={() => {}}
-            onUpdate={(newTitle) => {}}
+            onDelete={() => handleDelete(todo.id)}
+            onUpdate={(newTitle) =>
+              handleUpdate(todo.id, {
+                name: newTitle,
+                dueDate: new Date(),
+                status: TodoItemStatus.Pending,
+              })
+            }
           />
         ))}
       </div>

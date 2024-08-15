@@ -17,4 +17,9 @@ public class TodoHub : Hub
             throw;
         }
     }
+    
+    public async Task SendUpdate(string message)
+    {
+        await Clients.All.SendAsync("ReceiveUpdate", message);
+    }
 }
