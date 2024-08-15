@@ -93,9 +93,13 @@ public class TodoItemsControllerTests
 
         var result = controller.GetTodoItems();
 
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnValue = okResult.Value.Should().BeAssignableTo<IEnumerable<TodoItemDto>>().Subject;
+        var okResult = result.Result as OkObjectResult;
 
+        okResult.Should().NotBeNull();
+
+        var returnValue = okResult.Value as List<TodoItemDto>;
+        returnValue.Should().NotBeNull();
+        
         returnValue.Should().HaveCount(2);
         returnValue.Should().BeEquivalentTo(mockTodoItems);
 

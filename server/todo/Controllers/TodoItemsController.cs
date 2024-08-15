@@ -49,8 +49,10 @@ public class TodoItemsController: ControllerBase
         return NoContent();
     }
 
-    public IActionResult GetTodoItems()
+    [HttpGet]
+    public ActionResult<IEnumerable<TodoItemDto>> GetTodoItems()
     {
-        throw new NotImplementedException();
+        var items = _todoService.GetTodoItems();
+        return Ok(items);
     }
 }

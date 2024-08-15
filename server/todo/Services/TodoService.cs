@@ -35,6 +35,6 @@ public class TodoService : ITodoService
 
     public IEnumerable<TodoItemDto> GetTodoItems()
     {
-        throw new NotImplementedException();
+        return new List<TodoItemDto>();
     }
 }
