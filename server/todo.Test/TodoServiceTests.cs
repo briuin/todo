@@ -41,4 +41,29 @@ public class TodoServiceTests
         result.First().Name.Should().Be("Test 3"); 
         result.Last().Name.Should().Be("Test 1"); 
     }
+    
+    [Fact]
+    public void GetTodoItems_SortsByStatusDescending()
+    {
+        // Arrange
+        var service = new TodoService();
+        
+        var result = service.GetTodoItems(null, null, "status", "desc");
+        
+        result.Should().HaveCount(3);
+        result.First().Name.Should().Be("Test 3");  
+        result.Last().Name.Should().Be("Test 1");  
+    }
+    
+    [Fact]
+    public void GetTodoItems_FiltersByStatusAndSortsByDueDate()
+    {
+        // Arrange
+        var service = new TodoService();
+        
+        var result = service.GetTodoItems(TodoItemStatus.NotStarted, null, "duedate", "asc");
+        
+        result.Should().HaveCount(1);
+        result.First().Name.Should().Be("Test 1");
+    }
 }

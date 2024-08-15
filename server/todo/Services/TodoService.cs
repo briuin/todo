@@ -68,6 +68,21 @@ public class TodoService : ITodoService
             query = query.Where(todo => todo.DueDate.Date == dueDate.Value.Date);
         }
         
+        query = sortBy.ToLower() switch
+        {
+            "duedate" => sortDirection.ToLower() == "desc"
+                ? query.OrderByDescending(todo => todo.DueDate)
+                : query.OrderBy(todo => todo.DueDate),
+            "status" => sortDirection.ToLower() == "desc"
+                ? query.OrderByDescending(todo => todo.Status)
+                : query.OrderBy(todo => todo.Status),
+            "name" => sortDirection.ToLower() == "desc"
+                ? query.OrderByDescending(todo => todo.Name)
+                : query.OrderBy(todo => todo.Name),
+            _ => query.OrderBy(todo => todo.Name) 
+        };
+
+        
         return query.Select(todo => new TodoItemDto
         {
             Id = todo.Id,
