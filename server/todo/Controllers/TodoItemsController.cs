@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using todo.Dtos;
+using todo.Enums;
 using todo.Services;
 
 namespace todo.Controllers;
@@ -50,9 +51,13 @@ public class TodoItemsController: ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<TodoItemDto>> GetTodoItems()
+    public ActionResult<IEnumerable<TodoItemDto>> GetTodoItems(
+        TodoItemStatus? status = null, 
+        DateTime? dueDate = null, 
+        string sortBy = "Name", 
+        string sortDirection = "asc")
     {
-        var items = _todoService.GetTodoItems();
+        var items = _todoService.GetTodoItems(status, dueDate, sortBy, sortDirection);
         return Ok(items);
     }
 }

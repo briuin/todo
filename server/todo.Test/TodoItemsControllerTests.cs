@@ -87,7 +87,7 @@ public class TodoItemsControllerTests
             new TodoItemDto { Id = 2, Name = "Test 2", Description = "Description 2", DueDate = DateTime.Now.AddDays(2), Status = TodoItemStatus.InProgress }
         };
 
-        mockService.Setup(service => service.GetTodoItems()).Returns(mockTodoItems);
+        mockService.Setup(service => service.GetTodoItems(null, null, "Name", "asc")).Returns(mockTodoItems);
 
         var controller = new TodoItemsController(mockService.Object);
 
@@ -103,6 +103,34 @@ public class TodoItemsControllerTests
         returnValue.Should().HaveCount(2);
         returnValue.Should().BeEquivalentTo(mockTodoItems);
 
-        mockService.Verify(service => service.GetTodoItems(), Times.Once);
+        mockService.Verify(service => service.GetTodoItems(null, null, "Name", "asc"), Times.Once);
+    }
+    
+    [Fact]
+    public void GetTodoItems_ReturnsFilteredResultsByStatus()
+    {
+        // Arrange
+        var mockService = new Mock<ITodoService>();
+
+        var mockTodoItems = new List<TodoItemDto>
+        {
+            new TodoItemDto { Id = 1, Name = "Test 1", Description = "Description 1", DueDate = DateTime.Now.AddDays(1), Status = TodoItemStatus.NotStarted },
+            new TodoItemDto { Id = 2, Name = "Test 2", Description = "Description 2", DueDate = DateTime.Now.AddDays(2), Status = TodoItemStatus.InProgress }
+        };
+
+        mockService.Setup(service => service.GetTodoItems(TodoItemStatus.InProgress, null, "Name", "asc"))
+            .Returns(mockTodoItems.Where(t => t.Status == TodoItemStatus.InProgress).ToList());
+
+        var controller = new TodoItemsController(mockService.Object);
+
+        var result = controller.GetTodoItems(TodoItemStatus.InProgress);
+
+        var okResult = result.Result as OkObjectResult;
+        okResult.Should().NotBeNull();
+        var returnValue = okResult.Value as IEnumerable<TodoItemDto>;
+        returnValue.Should().HaveCount(1);
+        returnValue.First().Id.Should().Be(2);
+        
+        mockService.Verify(service => service.GetTodoItems(TodoItemStatus.InProgress, null, "Name", "asc"), Times.Once);
     }
 }
