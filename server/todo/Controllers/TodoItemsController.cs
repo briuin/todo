@@ -45,6 +45,7 @@ public class TodoItemsController: ControllerBase
     [HttpPut("{id:int}")]
     public IActionResult UpdateTodoItem(int id, UpdateTodoItemDto todoItemDto)
     {
-        throw new NotImplementedException();
+        _todoService.UpdateTodoItem(id, todoItemDto);
+        return NoContent();
     }
 }
