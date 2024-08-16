@@ -154,6 +154,8 @@ const TodoList: React.FC = () => {
     setTodoToDelete(null);
   };
 
+  const isNotAbleToCreate = () => isLoadingApi || !newTodo.name;
+
   if (loading)
     return <div className="text-center text-lg text-gray-700">Loading...</div>;
   if (error)
@@ -194,9 +196,9 @@ const TodoList: React.FC = () => {
         </div>
         <button
           onClick={handleCreate}
-          disabled={isLoadingApi}
+          disabled={isNotAbleToCreate()}
           className={`mt-4 py-2 px-4 rounded-lg transition duration-300 lg:mt-0 lg:self-end ${
-            isLoadingApi
+            isNotAbleToCreate()
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-blue-500 text-white hover:bg-blue-600"
           }`}
@@ -272,7 +274,7 @@ const TodoList: React.FC = () => {
       <ConfirmationModal
         isOpen={isModalOpen}
         onConfirm={() => handleDelete()}
-        onCancel={() => setIsModalOpen(false)}
+        onCancel={() => closeDeleteModal()}
         message="Are you sure you want to delete this todo?"
       />
 
