@@ -22,7 +22,6 @@ export const getTodoItems = async (
   if (dueDate && !isDateValid(dueDate)) {
     dueDate = undefined;
   }
-  console.log(dueDate);
   try {
     const response = await axios.get<TodoItemDto[]>(`${API_BASE_URL}`, {
       params: {
