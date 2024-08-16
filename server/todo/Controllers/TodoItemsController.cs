@@ -19,35 +19,87 @@ public class TodoItemsController: ControllerBase
     [HttpGet("{id}")]
     public ActionResult<TodoItemDto> GetTodoItem(int id)
     {
-        var item = _todoService.GetTodoItemById(id);
-
-        if (item == null)
+        try
         {
-            return NotFound();
-        }
+            var item = _todoService.GetTodoItemById(id);
 
-        return Ok(item);
+            if (item == null)
+            {
+                return NotFound(new { message = $"Todo item with ID {id} not found." });
+            }
+
+            return Ok(item);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while retrieving the todo item.", details = ex.Message });
+        }
     }
 
     [HttpPost]
     public IActionResult CreateTodoItem(CreateTodoItemDto todoItemDto)
     {
-        _todoService.CreateTodoItem(todoItemDto);
-        return CreatedAtAction(nameof(GetTodoItem), new { id = 1 }, todoItemDto);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            _todoService.CreateTodoItem(todoItemDto);
+            return CreatedAtAction(nameof(GetTodoItem), new { id = 0}, todoItemDto);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while creating the todo item.", details = ex.Message });
+        }
     }
 
     [HttpDelete("{id:int}")]
     public IActionResult DeleteTodoItem(int id)
     {
-        _todoService.DeleteTodoItem(id);
-        return NoContent();
+        try
+        {
+            var item = _todoService.GetTodoItemById(id);
+
+            if (item == null)
+            {
+                return NotFound(new { message = $"Todo item with ID {id} not found." });
+            }
+
+            _todoService.DeleteTodoItem(id);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while deleting the todo item.", details = ex.Message });
+        }
     }
 
     [HttpPut("{id:int}")]
     public IActionResult UpdateTodoItem(int id, UpdateTodoItemDto todoItemDto)
     {
-        _todoService.UpdateTodoItem(id, todoItemDto);
-        return NoContent();
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var item = _todoService.GetTodoItemById(id);
+
+            if (item == null)
+            {
+                return NotFound(new { message = $"Todo item with ID {id} not found." });
+            }
+
+            _todoService.UpdateTodoItem(id, todoItemDto);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while updating the todo item.", details = ex.Message });
+        }
     }
 
     [HttpGet]
@@ -57,7 +109,14 @@ public class TodoItemsController: ControllerBase
         string sortBy = "Name", 
         string sortDirection = "asc")
     {
-        var items = _todoService.GetTodoItems(status, dueDate, sortBy, sortDirection);
-        return Ok(items);
+        try
+        {
+            var items = _todoService.GetTodoItems(status, dueDate, sortBy, sortDirection);
+            return Ok(items);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while retrieving the todo items.", details = ex.Message });
+        }
     }
 }

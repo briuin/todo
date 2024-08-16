@@ -22,7 +22,7 @@ public class TodoItemsControllerTests
         {
             Name = "Test Todo",
             Description = "Test Description",
-            DueDate = DateTime.Now.AddDays(1)
+            DueDate = DateTime.Now.AddDays(1),
         };
 
         var result = controller.CreateTodoItem(newTodo);
@@ -36,8 +36,15 @@ public class TodoItemsControllerTests
         // Arrange
         var mockService = new Mock<ITodoService>();
         int testTodoId = 1;
+        var mockItem = new TodoItemDto
+        {
+            Id = 1, Name = "Test 1", Description = "Description 1", DueDate = DateTime.Now.AddDays(1),
+            Status = TodoItemStatus.NotStarted
+        };
 
         mockService.Setup(service => service.DeleteTodoItem(testTodoId)).Verifiable();
+        mockService.Setup(service => service.GetTodoItemById(1)).Returns(mockItem);
+
 
         var controller = new TodoItemsController(mockService.Object);
 
@@ -54,6 +61,12 @@ public class TodoItemsControllerTests
         // Arrange
         var mockService = new Mock<ITodoService>();
         int testTodoId = 1;
+        var mockItem = new TodoItemDto
+        {
+            Id = 1, Name = "Test 1", Description = "Description 1", DueDate = DateTime.Now.AddDays(1),
+            Status = TodoItemStatus.NotStarted
+        };
+
 
         var updateTodoItemDto = new UpdateTodoItemDto
         {
@@ -64,6 +77,7 @@ public class TodoItemsControllerTests
         };
         
         mockService.Setup(service => service.UpdateTodoItem(testTodoId, updateTodoItemDto)).Verifiable();
+        mockService.Setup(service => service.GetTodoItemById(1)).Returns(mockItem);
 
         var controller = new TodoItemsController(mockService.Object);
 
