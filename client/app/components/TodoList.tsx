@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import TodoItem from "./TodoItem";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import * as signalR from "@microsoft/signalr";
 import {
   createTodoItem,
@@ -27,7 +28,6 @@ const TodoList: React.FC = () => {
   });
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [connection, setConnection] = useState<signalR.HubConnection | null>(
     null
   );
@@ -55,7 +55,7 @@ const TodoList: React.FC = () => {
         );
         setTodos(todoItems);
       } catch (error) {
-        setError("Failed to fetch todo items");
+        toast.error("Failed to fetch todo items");
       } finally {
         setLoading(false);
       }
@@ -114,6 +114,7 @@ const TodoList: React.FC = () => {
     setIsLoadingApi(true);
     try {
       await createTodoItem(newTodo);
+      toast.success("Todo created successfully!");
       if (connection) {
         connection.invoke("SendUpdate", "A new todo item has been created.");
       }
@@ -124,7 +125,7 @@ const TodoList: React.FC = () => {
       });
     } catch (error) {
       console.error("Failed to create todo item", error);
-      setError("Failed to create todo item");
+      toast.error("Failed to create todo item");
     } finally {
       setIsLoadingApi(false);
     }
@@ -140,7 +141,7 @@ const TodoList: React.FC = () => {
       setTodoToEdit(null); // Close edit modal after successful update
     } catch (error) {
       console.error("Failed to update todo item", error);
-      setError("Failed to update todo item");
+      toast.error("Failed to update todo item");
     } finally {
       setIsLoadingApi(false);
     }
@@ -157,7 +158,7 @@ const TodoList: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to delete todo item", error);
-      setError("Failed to delete todo item");
+      toast.error("Failed to delete todo item");
     } finally {
       setIsModalOpen(false);
       setTodoToDelete(null);
@@ -186,8 +187,6 @@ const TodoList: React.FC = () => {
 
   if (loading)
     return <div className="text-center text-lg text-gray-700">Loading...</div>;
-  if (error)
-    return <div className="text-center text-lg text-red-500">{error}</div>;
 
   return (
     <div className="p-4 w-full max-w-full mx-auto">
@@ -317,7 +316,9 @@ const TodoList: React.FC = () => {
             }`}
           >
             <div>
-              <h2 className="text-xl font-semibold">{todo.name}</h2>
+              <h2 className="text-xl font-semibold truncate max-w-full">
+                {todo.name}
+              </h2>
               <p className="text-gray-600">Status: {todo.statusText}</p>
               <p className="text-gray-600">
                 Due Date: {new Date(todo.dueDate).toLocaleDateString()}
@@ -326,6 +327,7 @@ const TodoList: React.FC = () => {
                 Description: {todo.description}
               </p>
             </div>
+
             <div className="flex space-x-4">
               {todo.status === TodoItemStatus.Pending && (
                 <button
@@ -389,6 +391,8 @@ const TodoList: React.FC = () => {
           <div className="text-white text-xl">In Process...</div>
         </div>
       )}
+
+      <ToastContainer />
     </div>
   );
 };
