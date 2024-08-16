@@ -14,12 +14,11 @@ builder.Services.AddDbContext<TodoContext>(options =>
 
 
 builder.Services.AddSignalR();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigins",
         policyBuilder => policyBuilder
-            .WithOrigins("http://localhost:3000", "https://your-production-site.com")
+            .WithOrigins(builder.Configuration["ClientUrl"] ?? string.Empty)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()); 
