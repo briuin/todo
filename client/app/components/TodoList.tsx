@@ -18,6 +18,7 @@ import {
 } from "../todo.models";
 import ConfirmationModal from "./ConfirmationModal";
 import EditModal from "./EditModal";
+import { Env } from "../env-variable";
 
 const TodoList: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -64,7 +65,7 @@ const TodoList: React.FC = () => {
     fetchTodos();
 
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/todoHub`, {
+      .withUrl(`${Env.API_URL}/todoHub`, {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
       })

@@ -1,7 +1,8 @@
 import supertest from "supertest";
 import { getTodoItems } from "./todo.service";
+import { Env } from "../env-variable";
 
-const API_BASE_URL = "http://localhost:5064"; 
+const API_BASE_URL = Env.API_URL; 
 
 describe("Todo Integration Tests", () => {
   const api = supertest(API_BASE_URL);

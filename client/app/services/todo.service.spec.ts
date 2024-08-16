@@ -14,8 +14,9 @@ import {
   UpdateTodoItemDto,
   TodoItemStatus,
 } from "../todo.models";
+import { Env } from "../env-variable";
 
-const API_BASE_URL = "http://localhost:5064/TodoItems"; 
+const API_BASE_URL = `${Env.API_URL}/TodoItems`; 
 
 const mock = new MockAdapter(axios);
 

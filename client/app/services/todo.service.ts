@@ -6,8 +6,9 @@ import {
   TodoItemStatus,
   Todo,
 } from "../todo.models";
+import { Env } from "../env-variable";
 
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/TodoItems`;
+const API_BASE_URL = `${Env.API_URL}/TodoItems`;
 
 export const mapDTOtoModel = (dto: TodoItemDto) => {
   return new Todo(dto.id, dto.name, dto.description, dto.status, dto.dueDate);
