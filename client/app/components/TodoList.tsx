@@ -64,7 +64,7 @@ const TodoList: React.FC = () => {
     fetchTodos();
 
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5064/todoHub", {
+      .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/todoHub`, {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
       })

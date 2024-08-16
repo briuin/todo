@@ -7,7 +7,7 @@ import {
   Todo,
 } from "../todo.models";
 
-const API_BASE_URL = "http://localhost:5064/TodoItems";
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/TodoItems`;
 
 export const mapDTOtoModel = (dto: TodoItemDto) => {
   return new Todo(dto.id, dto.name, dto.description, dto.status, dto.dueDate);
