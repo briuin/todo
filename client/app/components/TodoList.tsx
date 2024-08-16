@@ -170,21 +170,38 @@ const TodoList: React.FC = () => {
         <div className="flex-1">
           <h2 className="text-2xl font-semibold mb-4">Add New Todo</h2>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <input
-              type="text"
-              name="name"
-              placeholder="Todo Name"
-              value={newTodo.name}
-              onChange={handleInputChange}
-              className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="date"
-              name="dueDate"
-              value={newTodo.dueDate.toISOString().substr(0, 10)}
-              onChange={handleDateChange}
-              className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div>
+              <label
+                htmlFor="label"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Todo Name"
+                value={newTodo.name}
+                onChange={handleInputChange}
+                className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="dueDate"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                Due Date
+              </label>
+              <input
+                type="date"
+                name="dueDate"
+                id="dueDate"
+                value={newTodo.dueDate.toISOString().substr(0, 10)}
+                onChange={handleDateChange}
+                className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
           <textarea
             name="description"
