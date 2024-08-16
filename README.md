@@ -140,3 +140,92 @@ Before you begin, ensure you have met the following requirements:
 
    The application will be running on `http://localhost:3000`.
 
+
+# Running Docker Compose from the Root Directory
+
+To run both the `server` and `client` Docker Compose setups from the root directory, follow these steps:
+
+1. **Navigate to the root directory of your project:**
+
+
+2. **Run Docker Compose:**
+
+   Use the following command to build and start the services defined in both the `server` and `client` `docker-compose.yml` files:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+   This command will:
+   - Build the Docker images for both the server and client services.
+   - Start the containers in the correct order, as defined by your `docker-compose.yml` files.
+   - Run Server in localhost:5064 and Client in localhost:3000
+
+3. **Stop the Services:**
+
+   To stop the services, run:
+
+   ```bash
+   docker-compose down
+   ```
+
+   This command will stop and remove the containers for both the server and client.
+
+# Running Docker Compose Separately in Each Folder
+
+If you prefer to run the Docker Compose setups separately in the `server` and `client` folders, follow these steps:
+
+## Running the Server
+
+1. **Navigate to the `server` directory:**
+
+   ```bash
+   cd server
+   ```
+
+2. **Run Docker Compose for the server:**
+
+   ```bash
+   docker-compose up --build
+   ```
+
+   This command will:
+   - Build the Docker image for the server.
+   - Start the server container.
+   - The Application will run in localhost:5064
+
+3. **Stop the Server:**
+
+   To stop the server container, run:
+
+   ```bash
+   docker-compose down
+   ```
+
+## Running the Client
+
+1. **Navigate to the `client` directory:**
+
+   ```bash
+   cd client
+   ```
+
+2. **Run Docker Compose for the client:**
+
+   ```bash
+   docker-compose up --build
+   ```
+
+   This command will:
+   - Build the Docker image for the client.
+   - Start the client container.
+   - The Application will run in localhost:3000
+
+3. **Stop the Client:**
+
+   To stop the client container, run:
+
+   ```bash
+   docker-compose down
+   ```
+

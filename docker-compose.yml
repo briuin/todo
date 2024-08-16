@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  server:
+    extends:
+      file: ./server/docker-compose.yml
+      service: todo
+    depends_on:
+      - database
+
+  database:
+    extends:
+      file: ./server/docker-compose.yml
+      service: database
+
+  client:
+    extends:
+      file: ./client/docker-compose.yml
+      service: nextjs-app
+
+volumes:
+  pgdata:
