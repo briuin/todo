@@ -15,6 +15,7 @@ import {
   TodoItemStatus,
   UpdateTodoItemDto,
 } from "../todo.models";
+import ConfirmationModal from "./ConfirmationModal";
 
 const TodoList: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -31,6 +32,8 @@ const TodoList: React.FC = () => {
   );
 
   const [isLoadingApi, setIsLoadingApi] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [todoToDelete, setTodoToDelete] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -125,16 +128,30 @@ const TodoList: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async () => {
+    if (!todoToDelete) return;
+
     try {
-      await deleteTodoItem(id);
+      await deleteTodoItem(todoToDelete);
       if (connection) {
         connection.invoke("SendUpdate", "A todo item has been deleted.");
       }
     } catch (error) {
       console.error("Failed to delete todo item", error);
       setError("Failed to delete todo item");
+    } finally {
+      setIsModalOpen(false);
+      setTodoToDelete(null);
     }
+  };
+  const openDeleteModal = (id: number) => {
+    setTodoToDelete(id);
+    setIsModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsModalOpen(false);
+    setTodoToDelete(null);
   };
 
   if (loading)
@@ -242,7 +259,7 @@ const TodoList: React.FC = () => {
                 </button>
               )}
               <button
-                onClick={() => handleDelete(todo.id)}
+                onClick={() => openDeleteModal(todo.id)}
                 className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300"
               >
                 Delete
@@ -251,6 +268,13 @@ const TodoList: React.FC = () => {
           </li>
         ))}
       </ul>
+
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onConfirm={() => handleDelete()}
+        onCancel={() => setIsModalOpen(false)}
+        message="Are you sure you want to delete this todo?"
+      />
 
       {isLoadingApi && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
