@@ -4,11 +4,7 @@ import { TodoItemDto, CreateTodoItemDto, UpdateTodoItemDto, TodoItemStatus, Todo
 const API_BASE_URL = 'http://localhost:5064/TodoItems';
 
 export const mapDTOtoModel = (dto: TodoItemDto) => {
-    return {
-        id: dto.id,
-        title: dto.name,
-        completed: dto.status != TodoItemStatus.Completed,
-    } as Todo;
+    return new Todo(dto.id, dto.name, dto.description, dto.status, dto.dueDate);
 }
 
 export const getTodoItems = async (status?: TodoItemStatus, dueDate?: Date, sortBy: string = 'Name', sortDirection: string = 'asc') => {

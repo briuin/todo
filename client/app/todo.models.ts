@@ -1,6 +1,7 @@
 export interface TodoItemDto {
   id: number;
   name: string;
+  description: string;
   status: TodoItemStatus;
   dueDate: Date;
 }
@@ -8,7 +9,6 @@ export interface TodoItemDto {
 export interface CreateTodoItemDto {
   name: string;
   description: string;
-  status: TodoItemStatus;
   dueDate: Date;
 }
 
@@ -25,8 +25,35 @@ export enum TodoItemStatus {
   Completed = 2,
 }
 
-export interface Todo {
+export class Todo {
   id: number;
-  title: string;
-  completed: boolean;
+  name: string;
+  description: string;
+  status: TodoItemStatus;
+  dueDate: Date;
+
+  constructor(
+    id: number,
+    name: string,
+    description: string,
+    status: number,
+    dueDate: Date
+  ) {
+    this.id = id;
+    this.name = name;
+    this.description = description;
+    this.status = status;
+    this.dueDate = new Date(dueDate);
+  }
+
+  get statusText() {
+    switch (this.status) {
+      case 2:
+        return "Completed";
+      case 1:
+        return "In Progress";
+      default:
+        return "Pending";
+    }
+  }
 }

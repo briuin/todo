@@ -18,12 +18,19 @@ import {
 
 const TodoList: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [newTodo, setNewTodo] = useState<string>("");
+  const [newTodo, setNewTodo] = useState<CreateTodoItemDto>({
+    name: "",
+    dueDate: new Date(),
+    description: "",
+  });
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [connection, setConnection] = useState<signalR.HubConnection | null>(
     null
   );
+
+  const [isLoadingApi, setIsLoadingApi] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -57,8 +64,8 @@ const TodoList: React.FC = () => {
     });
 
     connection.on("ReceiveUpdate", (message) => {
-        console.log("Update received: ", message);
-        fetchTodos();
+      console.log("Update received: ", message);
+      fetchTodos();
     });
 
     return () => {
@@ -68,21 +75,41 @@ const TodoList: React.FC = () => {
     };
   }, []);
 
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setNewTodo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setNewTodo((prev) => ({
+      ...prev,
+      dueDate: new Date(value),
+    }));
+  };
+
   const handleCreate = async () => {
+    setIsLoadingApi(true);
     try {
-      const dto: CreateTodoItemDto = {
-        name: newTodo,
-        description: '',
-        dueDate: new Date(),
-        status: TodoItemStatus.Pending,
-      };
-      await createTodoItem(dto);
+      await createTodoItem(newTodo);
       if (connection) {
         connection.invoke("SendUpdate", "A new todo item has been created.");
       }
+      setNewTodo({
+        name: "",
+        dueDate: new Date(),
+        description: "",
+      });
     } catch (error) {
       console.error("Failed to create todo item", error);
       setError("Failed to create todo item");
+    } finally {
+      setIsLoadingApi(false);
     }
   };
 
@@ -110,45 +137,126 @@ const TodoList: React.FC = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading)
+    return <div className="text-center text-lg text-gray-700">Loading...</div>;
+  if (error)
+    return <div className="text-center text-lg text-red-500">{error}</div>;
 
   return (
-    <div className="max-w-md mx-auto mt-10">
-      <h1 className="text-3xl font-bold mb-6 text-center">Todo List</h1>
-      <div className="flex mb-4">
-        <input
-          type="text"
-          value={newTodo}
-          onChange={(e) => setNewTodo(e.target.value)}
-          placeholder="Add new todo"
-          className="flex-grow p-2 border border-gray-300 rounded-l"
-        />
+    <div className="p-4 w-full max-w-full mx-auto">
+      <h1 className="text-3xl font-bold text-center mb-6">Todo List</h1>
+
+      {/* Form to create a new Todo */}
+      <div className="bg-white shadow-md rounded-lg p-6 mb-8 lg:flex lg:space-x-4 max-w-[720px] ml-auto mr-auto">
+        <div className="flex-1">
+          <h2 className="text-2xl font-semibold mb-4">Add New Todo</h2>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <input
+              type="text"
+              name="name"
+              placeholder="Todo Name"
+              value={newTodo.name}
+              onChange={handleInputChange}
+              className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="date"
+              name="dueDate"
+              value={newTodo.dueDate.toISOString().substr(0, 10)}
+              onChange={handleDateChange}
+              className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <textarea
+            name="description"
+            placeholder="Description"
+            value={newTodo.description}
+            onChange={handleInputChange}
+            className="mt-4 p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
         <button
           onClick={handleCreate}
-          className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600"
+          disabled={isLoadingApi}
+          className={`mt-4 py-2 px-4 rounded-lg transition duration-300 lg:mt-0 lg:self-end ${
+            isLoadingApi
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 text-white hover:bg-blue-600"
+          }`}
         >
-          Add
+          Create Todo
         </button>
       </div>
-      <div className="space-y-4">
+
+      {/* List of Todos */}
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {todos.map((todo) => (
-          <TodoItem
+          <li
             key={todo.id}
-            title={todo.title}
-            completed={todo.completed}
-            onToggle={() => {}}
-            onDelete={() => handleDelete(todo.id)}
-            onUpdate={(newTitle) =>
-              handleUpdate(todo.id, {
-                name: newTitle,
-                dueDate: new Date(),
-                status: TodoItemStatus.Pending,
-              })
-            }
-          />
+            className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
+          >
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                {todo.name}
+              </h2>
+              <div className="text-sm text-gray-600">
+                <p className="mb-1">
+                  <span className="font-semibold">Status:</span>{" "}
+                  {todo.statusText}
+                </p>
+                <p className="mb-1">
+                  <span className="font-semibold">Due Date:</span>{" "}
+                  {new Date(todo.dueDate).toLocaleDateString()}
+                </p>
+                <p className="mb-2">
+                  <span className="font-semibold">Description:</span>{" "}
+                  {todo.description}
+                </p>
+              </div>
+            </div>
+            <div className="flex space-x-4">
+              {todo.status === TodoItemStatus.Pending && (
+                <button
+                  onClick={() =>
+                    handleUpdate(todo.id, {
+                      ...todo,
+                      status: TodoItemStatus.InProgress,
+                    })
+                  }
+                  className="bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition duration-300"
+                >
+                  Start Task
+                </button>
+              )}
+              {todo.status === TodoItemStatus.InProgress && (
+                <button
+                  onClick={() =>
+                    handleUpdate(todo.id, {
+                      ...todo,
+                      status: TodoItemStatus.Completed,
+                    })
+                  }
+                  className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-300"
+                >
+                  Complete
+                </button>
+              )}
+              <button
+                onClick={() => handleDelete(todo.id)}
+                className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300"
+              >
+                Delete
+              </button>
+            </div>
+          </li>
         ))}
-      </div>
+      </ul>
+
+      {isLoadingApi && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="text-white text-xl">In Process...</div>
+        </div>
+      )}
     </div>
   );
 };

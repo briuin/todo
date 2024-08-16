@@ -29,7 +29,7 @@ public class TodoService : ITodoService
             Name = todoItemDto.Name,
             Description = todoItemDto.Description,
             DueDate = todoItemDto.DueDate,
-            Status = todoItemDto.Status
+            Status = TodoItemStatus.NotStarted
         };
 
         _context.TodoItems.Add(todoItem);
@@ -39,26 +39,34 @@ public class TodoService : ITodoService
 
     public TodoItemDto GetTodoItemById(int id)
     {
-        return _context.TodoItems.Find(id);
+        var todoItem = _context.TodoItems.Find(id);
+
+        if (todoItem == null)
+        {
+            throw new KeyNotFoundException($"Todo item with ID {id} not found.");
+        }
+
+        return todoItem;
     }
 
     public void DeleteTodoItem(int id)
     {
-       var todoItem = _context.TodoItems.Find(id);
-
-       if (todoItem == null)
-       {
-           throw new KeyNotFoundException($"Todo item with ID {id} not found.");
-       }
+        var todoItem = GetTodoItemById(id);
 
        _context.TodoItems.Remove(todoItem);
 
        _context.SaveChanges();
     }
 
-    public void UpdateTodoItem(int testTodoId, UpdateTodoItemDto updateTodoItemDto)
+    public void UpdateTodoItem(int id, UpdateTodoItemDto updateTodoItemDto)
     {
-       
+        var todoItem = GetTodoItemById(id);
+        todoItem.Status = updateTodoItemDto.Status;
+        todoItem.Description = updateTodoItemDto.Description;
+        todoItem.DueDate = updateTodoItemDto.DueDate;
+        todoItem.Name = updateTodoItemDto.Name;
+
+        _context.SaveChanges();
     }
 
     public IEnumerable<TodoItemDto> GetTodoItems(TodoItemStatus? status, DateTime? dueDate, string sortBy, string sortDirection)
