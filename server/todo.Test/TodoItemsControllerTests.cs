@@ -22,8 +22,7 @@ public class TodoItemsControllerTests
         {
             Name = "Test Todo",
             Description = "Test Description",
-            DueDate = DateTime.Now.AddDays(1),
-            Status = TodoItemStatus.NotStarted
+            DueDate = DateTime.Now.AddDays(1)
         };
 
         var result = controller.CreateTodoItem(newTodo);

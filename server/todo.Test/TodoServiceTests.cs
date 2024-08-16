@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using todo.Dtos;
 using todo.Enums;
 using todo.Models;
 using todo.Services;
@@ -84,11 +85,11 @@ public class TodoServiceTests
         var context = new TodoContext(options);
 
         // Seed data
-        context.TodoItems.AddRange(new List<TodoItem>
+        context.TodoItems.AddRange(new List<TodoItemDto>
         {
-            new TodoItem { Id = 1, Name = "Test 1", Description = "Description 1", DueDate = DateTime.Now.AddDays(1), Status = TodoItemStatus.NotStarted },
-            new TodoItem { Id = 2, Name = "Test 2", Description = "Description 2", DueDate = DateTime.Now.AddDays(2), Status = TodoItemStatus.InProgress },
-            new TodoItem { Id = 3, Name = "Test 3", Description = "Description 3", DueDate = DateTime.Now.AddDays(3), Status = TodoItemStatus.Completed }
+            new TodoItemDto { Id = 1, Name = "Test 1", Description = "Description 1", DueDate = DateTime.Now.AddDays(1), Status = TodoItemStatus.NotStarted },
+            new TodoItemDto { Id = 2, Name = "Test 2", Description = "Description 2", DueDate = DateTime.Now.AddDays(2), Status = TodoItemStatus.InProgress },
+            new TodoItemDto { Id = 3, Name = "Test 3", Description = "Description 3", DueDate = DateTime.Now.AddDays(3), Status = TodoItemStatus.Completed }
         });
 
         context.SaveChanges();

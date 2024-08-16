@@ -16,6 +16,7 @@ import {
   UpdateTodoItemDto,
 } from "../todo.models";
 import ConfirmationModal from "./ConfirmationModal";
+import EditModal from "./EditModal";
 
 const TodoList: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -34,11 +35,24 @@ const TodoList: React.FC = () => {
   const [isLoadingApi, setIsLoadingApi] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [todoToDelete, setTodoToDelete] = useState<number | null>(null);
+  const [todoToEdit, setTodoToEdit] = useState<TodoItemDto | null>(null);
+
+  const [statusFilter, setStatusFilter] = useState<
+    TodoItemStatus | undefined
+  >();
+  const [dueDateFilter, setDueDateFilter] = useState<Date | undefined>();
+  const [sortBy, setSortBy] = useState<string>("Name");
+  const [sortDirection, setSortDirection] = useState<string>("asc");
 
   useEffect(() => {
     const fetchTodos = async () => {
       try {
-        const todoItems = await getTodoItems();
+        const todoItems = await getTodoItems(
+          statusFilter,
+          dueDateFilter,
+          sortBy,
+          sortDirection
+        );
         setTodos(todoItems);
       } catch (error) {
         setError("Failed to fetch todo items");
@@ -76,7 +90,7 @@ const TodoList: React.FC = () => {
         connection.stop();
       }
     };
-  }, []);
+  }, [statusFilter, dueDateFilter, sortBy, sortDirection]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -117,20 +131,25 @@ const TodoList: React.FC = () => {
   };
 
   const handleUpdate = async (id: number, updatedTodo: UpdateTodoItemDto) => {
+    setIsLoadingApi(true);
     try {
       await updateTodoItem(id, updatedTodo);
       if (connection) {
         connection.invoke("SendUpdate", "A todo item has been updated.");
       }
+      setTodoToEdit(null); // Close edit modal after successful update
     } catch (error) {
       console.error("Failed to update todo item", error);
       setError("Failed to update todo item");
+    } finally {
+      setIsLoadingApi(false);
     }
   };
 
   const handleDelete = async () => {
     if (!todoToDelete) return;
 
+    setIsLoadingApi(true);
     try {
       await deleteTodoItem(todoToDelete);
       if (connection) {
@@ -142,6 +161,7 @@ const TodoList: React.FC = () => {
     } finally {
       setIsModalOpen(false);
       setTodoToDelete(null);
+      setIsLoadingApi(false);
     }
   };
   const openDeleteModal = (id: number) => {
@@ -152,6 +172,14 @@ const TodoList: React.FC = () => {
   const closeDeleteModal = () => {
     setIsModalOpen(false);
     setTodoToDelete(null);
+  };
+
+  const openEditModal = (todo: TodoItemDto) => {
+    setTodoToEdit(todo);
+  };
+
+  const closeEditModal = () => {
+    setTodoToEdit(null);
   };
 
   const isNotAbleToCreate = () => isLoadingApi || !newTodo.name;
@@ -224,31 +252,79 @@ const TodoList: React.FC = () => {
         </button>
       </div>
 
+      <div className="bg-white shadow-md rounded-lg p-4 mb-6 max-w-[720px] mx-auto flex flex-col gap-4 lg:flex-row lg:flex-wrap">
+        <div className="w-full lg:w-[48%]">
+          <label className="block text-gray-700 font-medium mb-2">Status</label>
+          <select
+            className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) =>
+              setStatusFilter(e.target.value as unknown as TodoItemStatus)
+            }
+          >
+            <option value="">All Statuses</option>
+            <option value={TodoItemStatus.Pending}>Pending</option>
+            <option value={TodoItemStatus.InProgress}>In Progress</option>
+            <option value={TodoItemStatus.Completed}>Completed</option>
+          </select>
+        </div>
+        <div className="w-full lg:w-[48%]">
+          <label className="block text-gray-700 font-medium mb-2">
+            Due Date
+          </label>
+          <input
+            type="date"
+            className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setDueDateFilter(new Date(e.target.value))}
+          />
+        </div>
+        <div className="w-full lg:w-[48%]">
+          <label className="block text-gray-700 font-medium mb-2">
+            Sort By
+          </label>
+          <select
+            className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="Name">Name</option>
+            <option value="DueDate">Due Date</option>
+          </select>
+        </div>
+        <div className="w-full lg:w-[48%]">
+          <label className="block text-gray-700 font-medium mb-2">
+            Sort Direction
+          </label>
+          <select
+            className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setSortDirection(e.target.value)}
+          >
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+      </div>
+
       {/* List of Todos */}
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {todos.map((todo) => (
           <li
             key={todo.id}
-            className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
+            className={`shadow-md rounded-lg p-6 ${
+              todo.status === TodoItemStatus.Pending
+                ? "bg-blue-200"
+                : todo.status === TodoItemStatus.InProgress
+                ? "bg-yellow-200"
+                : "bg-green-200"
+            }`}
           >
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                {todo.name}
-              </h2>
-              <div className="text-sm text-gray-600">
-                <p className="mb-1">
-                  <span className="font-semibold">Status:</span>{" "}
-                  {todo.statusText}
-                </p>
-                <p className="mb-1">
-                  <span className="font-semibold">Due Date:</span>{" "}
-                  {new Date(todo.dueDate).toLocaleDateString()}
-                </p>
-                <p className="mb-2">
-                  <span className="font-semibold">Description:</span>{" "}
-                  {todo.description}
-                </p>
-              </div>
+            <div>
+              <h2 className="text-xl font-semibold">{todo.name}</h2>
+              <p className="text-gray-600">Status: {todo.statusText}</p>
+              <p className="text-gray-600">
+                Due Date: {new Date(todo.dueDate).toLocaleDateString()}
+              </p>
+              <p className="text-gray-600 mb-4">
+                Description: {todo.description}
+              </p>
             </div>
             <div className="flex space-x-4">
               {todo.status === TodoItemStatus.Pending && (
@@ -272,11 +348,17 @@ const TodoList: React.FC = () => {
                       status: TodoItemStatus.Completed,
                     })
                   }
-                  className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-300"
+                  className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-200 transition duration-300"
                 >
                   Complete
                 </button>
               )}
+              <button
+                onClick={() => openEditModal(todo)}
+                className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+              >
+                Edit
+              </button>
               <button
                 onClick={() => openDeleteModal(todo.id)}
                 className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300"
@@ -287,6 +369,13 @@ const TodoList: React.FC = () => {
           </li>
         ))}
       </ul>
+
+      <EditModal
+        isOpen={!!todoToEdit}
+        onClose={closeEditModal}
+        onSave={(updatedTodo) => handleUpdate(updatedTodo.id, updatedTodo)}
+        todo={todoToEdit}
+      />
 
       <ConfirmationModal
         isOpen={isModalOpen}
